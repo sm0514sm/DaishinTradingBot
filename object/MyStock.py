@@ -12,3 +12,7 @@ class MyStock:
     def print_info(self):
         print(f"{self.name:>15} {self.code:>8} {self.quantity:>5} {self.book_value:>10} {self.profit_value:>10}"
               f"{self.eval_amount:>10} {self.eval_gain:>10} {self.earning_rate:>5.3f}")
+
+    def __repr__(self):
+        return (f"MyStock({self.name}, {self.code}, {self.quantity}, {self.book_value}, {self.profit_value}, "
+                f"{self.eval_amount}, {self.eval_gain}, {self.earning_rate})")

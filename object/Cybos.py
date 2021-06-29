@@ -18,15 +18,16 @@ class Cybos(object):
             self.CpTdUtil = win32com.client.Dispatch("CpTrade.CpTdUtil")  # 주식 주문
             self.CpTd0311 = win32com.client.Dispatch("CpTrade.CpTd0311")
             self.CpTd6033 = win32com.client.Dispatch("CpTrade.CpTd6033")  # 주식 잔고 조회
+            self.CpTdNew5331A = win32com.client.Dispatch("CpTrade.CpTdNew5331A")  # 매수 가능 금액
 
             self.StockMst = win32com.client.Dispatch("dscbo1.StockMst")
             self.StockMst2 = win32com.client.Dispatch("dscbo1.StockMst2")
             cls._init = True
             if self.CpCybos.IsConnect == 0:
-                print("PLUS가 정상적으로 연결되지 않음"
-                      "아래 내용 확인 바람"
-                      "1. Cybos Plus가 켜져있는지"
-                      "2. Python 32bit로 실행시키는지"
+                print("PLUS가 정상적으로 연결되지 않음\n"
+                      "아래 내용 확인 바람\n"
+                      "1. Cybos Plus가 켜져있는지\n"
+                      "2. Python 32bit로 실행시키는지\n"
                       "3. 파이썬(혹은 IDE)가 관리자 권한인지")
                 exit()
             if self.CpTdUtil.TradeInit(0) != 0:

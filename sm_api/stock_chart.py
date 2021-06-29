@@ -12,7 +12,8 @@ class Candle:
         print(self.date_str, self.low_price, self.high_price, self.close_price)
 
 
-def get_chart_info_dict(cybos: Cybos, code: str, count: int, info: list, types: str):
+def get_chart_info_dict(code: str, count: int, info: list, types: str):
+    cybos = Cybos()
     StockChart = cybos.StockChart
     StockChart.SetInputValue(0, code)  # 종목코드
     StockChart.SetInputValue(1, ord('2'))  # 기간요청시 1, 개수요청시 2 (ASCII 변환필요)
@@ -28,12 +29,12 @@ def get_chart_info_dict(cybos: Cybos, code: str, count: int, info: list, types: 
         candles.append(Candle(StockChart.GetDataValue(0, i), StockChart.GetDataValue(1, i),
                               StockChart.GetDataValue(2, i), StockChart.GetDataValue(3, i)))
     chart_info_dict['candles'] = candles
-    chart_info_dict['min'] = min(candle.low_price for candle in candles)
-    chart_info_dict['max'] = max(candle.high_price for candle in candles)
+    chart_info_dict['min_n_days'] = min(candle.low_price for candle in candles)
+    chart_info_dict['max_n_days'] = max(candle.high_price for candle in candles)
     return chart_info_dict
 
 
 if __name__ == "__main__":
-    chart_info = get_chart_info_dict(Cybos(), code="A003540", count=100, info=[0, 4, 3, 5], types='D')
-    print(chart_info.get('min'))
-    print(chart_info.get('max'))
+    chart_info = get_chart_info_dict(code="A000020", count=100, info=[0, 4, 3, 5], types='D')
+    print(chart_info.get('min_n_days'))
+    print(chart_info.get('max_n_days'))
