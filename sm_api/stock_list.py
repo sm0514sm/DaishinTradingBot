@@ -30,7 +30,16 @@ def get_stock_list(stock_type: int = 0, is_only_st=True) -> list:
     return return_list
 
 
+def read_stock_list_from_txt_file() -> list[str]:
+    result = []
+    with open("../monitoring_stock.txt", "r", encoding='UTF8') as f:
+        while line := f.readline():
+            result.append(line.split(",")[1].replace("\'", "").strip())
+    return result
+
+
 if __name__ == "__main__":
     stock_list = get_stock_list(0, is_only_st=True)
     for stock in stock_list:
         print(stock)
+    print(read_stock_list_from_txt_file())

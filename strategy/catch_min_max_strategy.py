@@ -6,10 +6,11 @@ from sm_api.stock_chart import get_chart_info_dict
 from object.MonitorStock import MonitorStock, Status
 from sm_api.now_stock_info import get_now_prices, now_stocks_infos
 from sm_api.order_stock import get_my_stock_balance, get_buyable_amount, order_buy_stock
-from sm_api.stock_list import get_stock_list
+from sm_api.stock_list import get_stock_list, read_stock_list_from_txt_file
 
 # INPUT_CODES = [stock[1] for stock in get_stock_list()]
-INPUT_CODES = ["A005930", "A035420", "A035720", "A035510", "A036570", "A051910"]
+INPUT_CODES = read_stock_list_from_txt_file()
+# INPUT_CODES = ["A041830", "A096770"]
 COUNT = 30  # 최대 최소 모니터링 기준 days
 DELAY = 10  # 모니터링 간격 seconds
 VALUE_K = 4
@@ -65,7 +66,6 @@ def update_stock_min_max(stock_dict: dict):
         print(f'{stock.code} ({i + 1}/{len(stock_dict.values())}) '
               f'{before_min_n_days}->{stock.min_n_days}, {before_max_n_days}->{stock.max_n_days}')
     return stock_dict
-    pass
 
 
 def run_strategy():
