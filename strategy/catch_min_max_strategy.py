@@ -87,7 +87,7 @@ def run_strategy():
         if t_now.weekday() in [5, 6] or not (t_start < t_now < t_end):  # 오늘이 토, 일이거나 개장시간 아님
             # print("* 개장 시간이 아님")
             time.sleep(DELAY)
-            # continue
+            continue
         print(f'{t_now.year}-{t_now.month:02}-{t_now.day:02} {t_now.hour:02}:{t_now.minute:02}:{t_now.second:02}')
         infos: dict = now_stocks_infos(INPUT_CODES)
         for stock in stock_dict.values():
