@@ -21,6 +21,14 @@ def get_CpTd6033():
     return CpTd6033
 
 
+def get_my_stock(code):
+    all_stock_list = get_my_stock_balance()
+    for stock in all_stock_list:
+        if stock.code == code:
+            return stock
+    return None
+
+
 def get_my_stock_balance() -> list:
     cybos = Cybos()
     CpTd6033 = get_CpTd6033()
@@ -64,7 +72,8 @@ def get_buyable_amount() -> int:
 
 
 # code 종목을 buy_cnt 만큼 시장가로 매수
-def order_buy_stock(code: str, buy_cnt: int):
+def order_buy_stock(code: str, buy_cnt: int) -> int:
+    print(f"코드 {str} {buy_cnt}개 매수 시도")
     cybos = Cybos()
 
     # 주식 매수 주문
@@ -72,19 +81,48 @@ def order_buy_stock(code: str, buy_cnt: int):
     CpTd0311.SetInputValue(0, "2")  # 2: 매수
     CpTd0311.SetInputValue(1, cybos.CpTdUtil.AccountNumber[0])  # 계좌번호
     CpTd0311.SetInputValue(2, "01")  #
-    CpTd0311.SetInputValue(3, code)  # 종목코드 - A003540 - 대신증권 종목
-    CpTd0311.SetInputValue(4, buy_cnt)  # 매수수량 10주
+    CpTd0311.SetInputValue(3, code)  # 종목코드
+    CpTd0311.SetInputValue(4, buy_cnt)  # 매수수량
     CpTd0311.SetInputValue(8, "03")  # 주문호가 구분코드 - 01: 보통, 03: 시장가
 
     # 매수 주문 요청
     nRet = CpTd0311.BlockRequest()
     if nRet != 0:  # 4면 15초 호출 제한
         print("주문요청 오류:", nRet)
+        return -1
 
     rqStatus = CpTd0311.GetDibStatus()
-    print("통신상태", rqStatus, CpTd0311.GetDibMsg1())
+    print("매수 통신상태", rqStatus, CpTd0311.GetDibMsg1())
     if rqStatus != 0:
-        exit()
+        return -1
+    return 0
+
+
+# code 종목을 sell_cnt 만큼 시장가로 매수
+def order_sell_stock(code: str, sell_cnt: int) -> int:
+    print(f"코드 {str} {sell_cnt}개 매도 시도")
+    cybos = Cybos()
+
+    # 주식 매수 주문
+    CpTd0311 = cybos.CpTd0311
+    CpTd0311.SetInputValue(0, "1")  # 1: 매도
+    CpTd0311.SetInputValue(1, cybos.CpTdUtil.AccountNumber[0])  # 계좌번호
+    CpTd0311.SetInputValue(2, "01")  #
+    CpTd0311.SetInputValue(3, code)  # 종목코드
+    CpTd0311.SetInputValue(4, sell_cnt)  # 매도수량
+    CpTd0311.SetInputValue(8, "03")  # 주문호가 구분코드 - 01: 보통, 03: 시장가
+
+    # 매도 주문 요청
+    nRet = CpTd0311.BlockRequest()
+    if nRet != 0:  # 4면 15초 호출 제한
+        print("주문요청 오류:", nRet)
+        return -1
+
+    rqStatus = CpTd0311.GetDibStatus()
+    print("매도 통신상태", rqStatus, CpTd0311.GetDibMsg1())
+    if rqStatus != 0:
+        return -1
+    return 0
 
 
 if __name__ == "__main__":

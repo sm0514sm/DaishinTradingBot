@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 from object.Stock import Stock
+from sm_api.util import dif_percent
 
 
 class Status(Enum):
@@ -21,10 +22,8 @@ class MonitorStock(Stock):
         self.last_time: datetime
 
         # 주문 정보
-        self.avg_buy_price: float = 0  # 매수 평균가
-        self.avg_sell_price: float = 0  # 매도 평균가
-        self.buy_cnt: float = 0  # 매수 개수
-        self.sell_cnt: float = 0  # 매도 개수
+        self.profit_value: float = 0  # 매수 평균가 (손익단가)
+        self.quantity: float = 0  # 매수 개수 (매도가능수량)
 
         # 주문 전 정보
         self.target_buy_price: float = 0  # 목표 매수 평균가 (최저점 돌파시 설정됨)
@@ -33,10 +32,22 @@ class MonitorStock(Stock):
     def __str__(self):
         occupy_size = len(self.name.encode()) - (len(self.name.encode()) - len(self.name)) // 2
         name = ' ' * (20 - occupy_size) + self.name
-        return f'{self.code} {name} ' \
-               f'current_price:{self.current_price:8}, ' \
-               f'min_n_days:{self.min_n_days:8}, max_n_days:{self.max_n_days:8}, '\
-               f'status:{self.status.name:>6}, ' \
-               f'avg_buy_price:{self.avg_buy_price:10}, avg_sell_price:{self.avg_sell_price:10}, ' \
-               f'buy_cnt:{self.buy_cnt:3}, sell_cnt:{self.sell_cnt:3} ' \
-               f'target_buy_price:{self.target_buy_price:8}, target_sell_price:{self.target_sell_price:8}'
+        return_str = f'{self.code} {name} ' \
+                     f'{self.current_price:8} ' \
+                     f'{self.min_n_days:8}({dif_percent(self.min_n_days, self.current_price):6.1f}) ' \
+                     f'{self.max_n_days:8}({dif_percent(self.max_n_days, self.current_price):6.1f}) ' \
+                     f'{self.status.name:>6}| '
+
+        if self.status != Status.WAIT:
+            return_str += f'손익단가:{self.profit_value:10}, quantity:{self.quantity:3}, '
+
+        if self.status == Status.WAIT:
+            return_str += f''
+        elif self.status == Status.BUY_READY:
+            return_str += f'target_buy_price:{self.target_buy_price:8} '
+        elif self.status == Status.BOUGHT:
+            return_str += f''
+        elif self.status == Status.SELL_READY:
+            return_str += f'target_sell_price:{self.target_sell_price:8} '
+
+        return return_str

@@ -35,6 +35,7 @@ def read_stock_list_from_txt_file() -> list[str]:
     with open("../monitoring_stock.txt", "r", encoding='UTF8') as f:
         while line := f.readline():
             result.append(line.split(",")[1].replace("\'", "").strip())
+    result = sorted(list(set(result)))
     return result
 
 
