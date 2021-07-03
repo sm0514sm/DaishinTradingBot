@@ -31,11 +31,12 @@ class MonitorStock(Stock):
         self.target_sell_price: float = 0  # 목표 매도 평균가 (최고점 돌파시 설정됨)
 
     def __str__(self):
-        return f'{self.code}, {self.name}, ' \
-               f'current_price:{self.current_price}, min_n_days:{self.min_n_days:8}, max_n_days:{self.max_n_days:8}, ' \
+        occupy_size = len(self.name.encode()) - (len(self.name.encode()) - len(self.name)) // 2
+        name = ' ' * (20 - occupy_size) + self.name
+        return f'{self.code} {name} ' \
+               f'current_price:{self.current_price:8}, ' \
+               f'min_n_days:{self.min_n_days:8}, max_n_days:{self.max_n_days:8}, '\
                f'status:{self.status.name:>6}, ' \
-               f'avg_buy_price:{self.avg_buy_price}, avg_sell_price:{self.avg_sell_price}, ' \
-               f'buy_cnt:{self.buy_cnt}, sell_cnt:{self.sell_cnt} ' \
-               f'target_buy_price:{self.target_buy_price}, target_sell_price:{self.target_sell_price}'
-
-
+               f'avg_buy_price:{self.avg_buy_price:10}, avg_sell_price:{self.avg_sell_price:10}, ' \
+               f'buy_cnt:{self.buy_cnt:3}, sell_cnt:{self.sell_cnt:3} ' \
+               f'target_buy_price:{self.target_buy_price:8}, target_sell_price:{self.target_sell_price:8}'
