@@ -72,7 +72,7 @@ def get_buyable_amount() -> int:
 
 
 # code 종목을 buy_cnt 만큼 시장가로 매수
-def order_buy_stock(code: str, buy_cnt: int) -> int:
+def order_buy_stock(code: str, buy_cnt: int) -> bool:
     print(f"코드 {str} {buy_cnt}개 매수 시도")
     cybos = Cybos()
 
@@ -89,13 +89,13 @@ def order_buy_stock(code: str, buy_cnt: int) -> int:
     nRet = CpTd0311.BlockRequest()
     if nRet != 0:  # 4면 15초 호출 제한
         print("주문요청 오류:", nRet)
-        return -1
+        return False
 
     rqStatus = CpTd0311.GetDibStatus()
     print("매수 통신상태", rqStatus, CpTd0311.GetDibMsg1())
     if rqStatus != 0:
-        return -1
-    return 0
+        return False
+    return True
 
 
 # code 종목을 sell_cnt 만큼 시장가로 매수
@@ -129,3 +129,4 @@ if __name__ == "__main__":
     print_my_acc()
     print(get_my_stock_balance())
     print(get_buyable_amount())
+    order_buy_stock("A041830", 10000)

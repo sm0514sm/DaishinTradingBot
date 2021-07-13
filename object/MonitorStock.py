@@ -7,6 +7,7 @@ from sm_api.util import dif_percent
 
 
 class Status(Enum):
+    UNSATISFY = -1
     WAIT = 0
     BUY_READY = 1
     BOUGHT = 2
@@ -36,10 +37,10 @@ class MonitorStock(Stock):
                      f'{self.current_price:8} ' \
                      f'{self.min_n_days:8}({dif_percent(self.min_n_days, self.current_price):6.1f}) ' \
                      f'{self.max_n_days:8}({dif_percent(self.max_n_days, self.current_price):6.1f}) ' \
-                     f'{self.status.name:>6} | '
+                     f'{self.status.name:>10} | '
 
-        if self.status != Status.WAIT:
-            return_str += f'손익단가:{self.profit_value:10}, quantity:{self.quantity:3}, '
+        if self.status in [Status.BOUGHT, Status.SELL_READY]:
+            return_str += f'손익단가:{self.profit_value:10.0f}, quantity:{self.quantity:3}, '
 
         if self.status == Status.WAIT:
             return_str += f''

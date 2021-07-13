@@ -9,10 +9,12 @@ from sm_api.order_stock import get_my_stock_balance, get_buyable_amount, order_b
 from sm_api.stock_list import get_stock_list, read_stock_list_from_txt_file
 
 # INPUT_CODES = [stock[1] for stock in get_stock_list()]
+from sm_api.util import dif_percent
+
 INPUT_CODES = read_stock_list_from_txt_file()
 # INPUT_CODES = ["A041830", "A096770"]
 COUNT = 7  # 최대 최소 모니터링 기준 days
-DELAY = 10  # 모니터링 간격 seconds
+DELAY = 120  # 모니터링 간격 seconds
 VALUE_K = 3
 BUY_AMOUNT = 500000  # 종목당 최대 구입 가격
 
@@ -24,9 +26,12 @@ def get_stock_min_max(codes) -> dict:
     for i, code in enumerate(codes):
         time.sleep(0.25)
         chart_info = get_chart_info_dict(code, COUNT, info=[0, 4, 3, 5], types='D')
-        stock_dict[code] = MonitorStock(code=code,
-                                        min_n_days=chart_info.get('min_n_days'),
-                                        max_n_days=chart_info.get('max_n_days'))
+        monitor_stock = MonitorStock(code=code,
+                                     min_n_days=chart_info.get('min_n_days'),
+                                     max_n_days=chart_info.get('max_n_days'))
+        if dif_percent(monitor_stock.max_n_days, monitor_stock.min_n_days) < VALUE_K *2:
+            monitor_stock.status = Status.UNSATISFY
+        stock_dict[code] = monitor_stock
         print(f'{code} ({i + 1:3}/{len(codes)}) {stock_dict[code].min_n_days:8}, {stock_dict[code].max_n_days:8}')
     return stock_dict
 
@@ -92,13 +97,14 @@ def run_strategy():
         infos: dict = now_stocks_infos(INPUT_CODES)
         for stock in stock_dict.values():
             stock.update_info(**infos[stock.code])
-            print(stock)
+            if stock.status == Status.UNSATISFY:
+                continue
             if stock.status == Status.WAIT and stock.current_price < stock.min_n_days \
                     and get_buyable_amount() >= BUY_AMOUNT:
                 stock.status = Status.BUY_READY
             elif stock.status == Status.BUY_READY:
                 stock.min_n_days = min(stock.min_n_days, stock.current_price)
-                stock.target_buy_price = stock.min_n_days * (1 + VALUE_K)
+                stock.target_buy_price = stock.min_n_days * (1 + VALUE_K * 0.01)
                 if stock.current_price > stock.target_buy_price:
                     if stock.current_price > get_buyable_amount():
                         print(f"* WARN: {stock.name}의 가격 {stock.current_price}는 {BUY_AMOUNT}보다 커서 구매 불가")
@@ -119,7 +125,7 @@ def run_strategy():
                 stock.status = Status.SELL_READY
             elif stock.status == Status.SELL_READY:
                 stock.max_n_days = max(stock.max_n_days, stock.current_price)
-                stock.target_sell_price = stock.max_n_days * (1 - VALUE_K)
+                stock.target_sell_price = stock.max_n_days * (1 - VALUE_K*0.01)
                 if stock.current_price < stock.target_sell_price:
                     if order_sell_stock(stock.code, stock.quantity):
                         print("* 매도완료")
@@ -129,6 +135,7 @@ def run_strategy():
                     else:
                         print("* 매도실패")
                         continue
+            print(stock)
         time.sleep(DELAY)
 
 
