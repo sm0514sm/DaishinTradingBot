@@ -1,3 +1,6 @@
+# python >= 3.9.5
+# 관리자 권한 필요
+# python 32bit 사용 (64bit 불가)
 import time
 from datetime import datetime, date
 
@@ -61,6 +64,7 @@ def add_stock_info_in_acc(stock_dict: dict) -> None:
 
 def update_stock_min_max(stock_dict: dict):
     print("* update_stock_min_max(): 날짜가 바뀌어 각 종목의 최소, 최대값을 다시 계산")
+    cnt = 0
     for i, stock in enumerate(stock_dict.values()):
         time.sleep(0.25)
         chart_info = get_chart_info_dict(stock.code, COUNT, info=[0, 4, 3, 5], types='D')
@@ -68,8 +72,11 @@ def update_stock_min_max(stock_dict: dict):
         before_max_n_days = stock.max_n_days
         stock.min_n_days = chart_info.get('min_n_days')
         stock.max_n_days = chart_info.get('max_n_days')
-        print(f'{stock.code} ({i + 1:3}/{len(stock_dict.values())}) '
-              f'{before_min_n_days:8}->{stock.min_n_days:8}, {before_max_n_days:8}->{stock.max_n_days:8}')
+        if before_min_n_days != stock.min_n_days or before_max_n_days != stock.max_n_days:
+            print(f'{stock.code} ({i + 1:3}/{len(stock_dict.values())}) '
+                  f'{before_min_n_days:8}->{stock.min_n_days:8}, {before_max_n_days:8}->{stock.max_n_days:8}')
+            cnt += 1
+    print(f"* update 개수: {cnt}개")
     return stock_dict
 
 
