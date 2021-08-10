@@ -55,7 +55,7 @@ def now_stocks_infos(codes) -> dict:
 if __name__ == "__main__":
     # print(get_now_price("A003540"))  # 대신 증권
     # print(get_now_price("A003545"))
-    # print(get_now_price("A003555"))
+    print(get_now_price("A025550"))
     # print(get_now_prices(["A003540", "A003545", "A003555"]))
     print(now_stocks_infos(["A003540", "A003545", "A003555"]))
     # now_stocks_infos([stock[1] for stock in get_stock_list()])

@@ -7,6 +7,7 @@ import pickle
 from datetime import datetime, date
 
 from object.MyStock import MyStock
+from sm_api.login_cybos import LoginCybos
 from sm_api.stock_chart import get_chart_info_dict
 from object.MonitorStock import MonitorStock, Status
 from sm_api.now_stock_info import get_now_prices, now_stocks_infos
@@ -167,4 +168,6 @@ def run_strategy():
 
 
 if __name__ == "__main__":
+    login_cybos = LoginCybos()
+    login_cybos.connect()
     run_strategy()
