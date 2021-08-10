@@ -45,10 +45,10 @@ class MonitorStock(Stock):
         if self.status == Status.WAIT:
             return_str += f''
         elif self.status == Status.BUY_READY:
-            return_str += f'target_buy_price:{self.target_buy_price:8} '
+            return_str += f'target_buy_price:{self.target_buy_price:8.0f} '
         elif self.status == Status.BOUGHT:
             return_str += f''
         elif self.status == Status.SELL_READY:
-            return_str += f'target_sell_price:{self.target_sell_price:8} '
+            return_str += f'target_sell_price:{self.target_sell_price:8.0f} '
 
         return return_str

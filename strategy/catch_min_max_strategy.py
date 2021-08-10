@@ -1,7 +1,9 @@
 # python >= 3.9.5
 # 관리자 권한 필요
 # python 32bit 사용 (64bit 불가)
+import os
 import time
+import pickle
 from datetime import datetime, date
 
 from object.MyStock import MyStock
@@ -16,7 +18,7 @@ from sm_api.util import dif_percent
 
 INPUT_CODES = read_stock_list_from_txt_file()
 # INPUT_CODES = ["A041830", "A096770"]
-COUNT = 7  # 최대 최소 모니터링 기준 days
+COUNT = 30  # 최대 최소 모니터링 기준 days
 DELAY = 120  # 모니터링 간격 seconds
 VALUE_K = 3
 BUY_AMOUNT = 500000  # 종목당 최대 구입 가격
@@ -25,18 +27,34 @@ BUY_AMOUNT = 500000  # 종목당 최대 구입 가격
 # 주식의 정보(최소값, 최대값)을 가져옴
 def get_stock_min_max(codes) -> dict:
     print("* get_stock_min_max(): 주식의 정보(최소값, 최대값)을 가져옴")
-    stock_dict = dict()
+    if os.path.isfile('stock_dict.pickle'):
+        print("* stock_dict.pickle로부터 읽어들임")
+        with open('stock_dict.pickle', 'rb') as f:
+            stock_dict = pickle.load(f)
+    else:
+        stock_dict = dict()
     for i, code in enumerate(codes):
         time.sleep(0.25)
         chart_info = get_chart_info_dict(code, COUNT, info=[0, 4, 3, 5], types='D')
-        monitor_stock = MonitorStock(code=code,
-                                     min_n_days=chart_info.get('min_n_days'),
-                                     max_n_days=chart_info.get('max_n_days'))
-        if dif_percent(monitor_stock.max_n_days, monitor_stock.min_n_days) < VALUE_K *2:
-            monitor_stock.status = Status.UNSATISFY
-        stock_dict[code] = monitor_stock
+        # stock_dict에 없는 코드인 경우
+        if code not in stock_dict.keys():
+            monitor_stock = MonitorStock(code=code,
+                                         min_n_days=chart_info.get('min_n_days'),
+                                         max_n_days=chart_info.get('max_n_days'))
+            stock_dict[code] = monitor_stock
+        # stock_dict에 있는 코드인 경우
+        else:
+            stock_dict[code].min_n_days = chart_info.get('min_n_days')
+            stock_dict[code].max_n_days = chart_info.get('max_n_days')
+        check_status_satisfy(stock_dict[code])
         print(f'{code} ({i + 1:3}/{len(codes)}) {stock_dict[code].min_n_days:8}, {stock_dict[code].max_n_days:8}')
     return stock_dict
+
+
+# 해당 종목이 모니터링 조건에 맞는지 판단 후, 상태 변경
+def check_status_satisfy(stock: MonitorStock):
+    if dif_percent(stock.max_n_days, stock.min_n_days) < VALUE_K * 2:
+        stock.status = Status.UNSATISFY
 
 
 # 계좌에 이미 가진 주식 정보를 가져와 업데이트
@@ -89,6 +107,8 @@ def run_strategy():
     # 계좌에 있는 주식 정보 추가
     add_stock_info_in_acc(stock_dict)
     while True:
+        with open('stock_dict.pickle', 'wb') as f:
+            pickle.dump(stock_dict, f, pickle.HIGHEST_PROTOCOL)
         t_now = datetime.now()
         if last_date != date.today():
             print("* 날짜가 바뀌어 각 종목의 최소, 최대값을 다시 계산합니다.")
@@ -132,7 +152,7 @@ def run_strategy():
                 stock.status = Status.SELL_READY
             elif stock.status == Status.SELL_READY:
                 stock.max_n_days = max(stock.max_n_days, stock.current_price)
-                stock.target_sell_price = stock.max_n_days * (1 - VALUE_K*0.01)
+                stock.target_sell_price = stock.max_n_days * (1 - VALUE_K * 0.01)
                 if stock.current_price < stock.target_sell_price:
                     if order_sell_stock(stock.code, stock.quantity):
                         print("* 매도완료")
